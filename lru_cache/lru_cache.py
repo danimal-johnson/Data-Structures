@@ -1,3 +1,8 @@
+import sys
+sys.path.append('../doubly_linked_list')
+from doubly_linked_list import ListNode, DoublyLinkedList
+
+
 class LRUCache:
     """
     Our LRUCache class keeps track of the max number of nodes it
@@ -6,8 +11,11 @@ class LRUCache:
     order, as well as a storage dict that provides fast access
     to every node stored in the cache.
     """
+
     def __init__(self, limit=10):
-        pass
+        self.size = 0
+        self.storage = DoublyLinkedList()
+        self.limit = limit
 
     """
     Retrieves the value associated with the given key. Also
@@ -16,8 +24,22 @@ class LRUCache:
     Returns the value associated with the key or None if the
     key-value pair doesn't exist in the cache.
     """
+
     def get(self, key):
-        pass
+        current_node = self.storage.head
+        index = 0
+        while index < len(self.storage):  # self.size:
+            node_value = current_node.value
+
+            if node_value != None:
+                return_value = node_value.get(key)
+                if return_value != None:
+                    self.storage.move_to_front(current_node)
+                    return return_value
+
+            current_node = current_node.next
+            index += 1
+        return None
 
     """
     Adds the given key-value pair to the cache. The newly-
@@ -29,5 +51,32 @@ class LRUCache:
     want to overwrite the old value associated with the key with
     the newly-specified value.
     """
+
     def set(self, key, value):
-        pass
+
+        # We will always create a new node for the head
+        # (the most-recently-used position)
+        new_node = ListNode({key: value})
+
+        # If a node with the value already existed, delete it first.
+        current_node = self.storage.head
+        index = 0
+        while index < len(self.storage):  # self.size:
+            node_value = current_node.value
+            if node_value != None:
+                previous_value = node_value.get(key)
+                if previous_value != None:
+                    self.storage.delete(current_node)
+                    self.size -= 1
+            current_node = current_node.next
+            index += 1
+
+        # If the cache is too long, delete the tail
+        # (the least-recently-used position)
+        if self.size == self.limit:
+            self.storage.remove_from_tail()
+            self.size -= 1
+
+        # Now add the new node to the cache.
+        self.storage.add_to_head(new_node.value)
+        self.size += 1
